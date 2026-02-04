@@ -1,0 +1,444 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>Daily Puzzle | Morkeh</title>
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+	<link rel="stylesheet" href="css/styles.css" type="text/css"/>
+	<link rel="icon" href="favicon.ico">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Alegreya+Sans&family=Merriweather&family=Montserrat&display=swap" rel="stylesheet">
+
+<!-- Navigation Bar -->
+<nav class="navbar navbar-expand-lg navbar-dark shadow-5-strong" style="background-color: black">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="index.html"><img class="mini-pic" src="images/9hy4vb3sAzm5xzlspwjljvyy4Afggxxz9ntdcqxvt6475bfyybm2llzfcg9llcrpm0l0dv45n0287tmpAjw1As53zA6jg3k95b3s4t5l5y7x4w784ttAw3st116pxzr0xb5lydmywzv3mb0dl7Aykzy43g17zchcjvr6h9cfb4f3pAhyxrd1.png" alt="morkeh profile picture"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item">
+          <a class="nav-link" href="index.html">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link active" href="puzzle.html">Daily Puzzle</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://minket.substack.com">Mind Market</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="https://github.com/mblaytofey">Github</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+</head>
+
+<body>
+
+<div class="puzzle-container">
+	<h1 id="custom-h1">Daily Puzzle</h1>
+	<p class="puzzle-subtitle">Guess the three clues and find the link that connects them!</p>
+
+	<div class="puzzle-date" id="puzzle-date"></div>
+
+	<div class="puzzle-board">
+		<!-- Clue 1 -->
+		<div class="clue-row" id="clue-row-1">
+			<div class="clue-label">Clue 1</div>
+			<div class="clue-hint" id="hint-1"></div>
+			<div class="clue-input-group">
+				<input type="text" class="clue-input" id="input-1" placeholder="Enter your guess..." autocomplete="off">
+				<button class="btn check-btn" id="check-1" onclick="checkAnswer(1)">Check</button>
+			</div>
+			<div class="clue-result" id="result-1"></div>
+		</div>
+
+		<!-- Clue 2 -->
+		<div class="clue-row" id="clue-row-2">
+			<div class="clue-label">Clue 2</div>
+			<div class="clue-hint" id="hint-2"></div>
+			<div class="clue-input-group">
+				<input type="text" class="clue-input" id="input-2" placeholder="Enter your guess..." autocomplete="off">
+				<button class="btn check-btn" id="check-2" onclick="checkAnswer(2)">Check</button>
+			</div>
+			<div class="clue-result" id="result-2"></div>
+		</div>
+
+		<!-- Clue 3 -->
+		<div class="clue-row" id="clue-row-3">
+			<div class="clue-label">Clue 3</div>
+			<div class="clue-hint" id="hint-3"></div>
+			<div class="clue-input-group">
+				<input type="text" class="clue-input" id="input-3" placeholder="Enter your guess..." autocomplete="off">
+				<button class="btn check-btn" id="check-3" onclick="checkAnswer(3)">Check</button>
+			</div>
+			<div class="clue-result" id="result-3"></div>
+		</div>
+
+		<hr id="hr-main">
+
+		<!-- The Link -->
+		<div class="clue-row link-row" id="link-row">
+			<div class="clue-label link-label">The Link</div>
+			<div class="clue-hint" id="hint-link"></div>
+			<div class="clue-input-group">
+				<input type="text" class="clue-input" id="input-link" placeholder="What connects them all?" autocomplete="off">
+				<button class="btn check-btn" id="check-link" onclick="checkAnswer('link')">Check</button>
+			</div>
+			<div class="clue-result" id="result-link"></div>
+		</div>
+	</div>
+
+	<div class="puzzle-stats" id="puzzle-stats"></div>
+
+	<div class="puzzle-complete" id="puzzle-complete" style="display: none;">
+		<h2 id="custom-h3">Congratulations!</h2>
+		<p class="complete-message" id="complete-message"></p>
+		<p class="share-text">Come back tomorrow for a new puzzle!</p>
+	</div>
+</div>
+
+<div class="bottom-container">
+	<table class="projects">
+		<tr>
+			<td><h3 id="custom-h3"><a class="footer-link" href="https://www.linkedin.com/in/morkehb">LinkedIn</a></h3></td>
+			<td><h3 id="custom-h3"><a class="footer-link" href="https://github.com/mblaytofey">GitHub</a></h3></td>
+			<td><h3 id="custom-h3"><a class="footer-link" href="https://www.instagram.com/morkeh_blay/">Instagram</a></h3></td>
+		</tr>
+	</table>
+	<p class="copyright">&copy; 2023 Morkeh Blay-Tofey.</p>
+</div>
+
+<script>
+// ============================================
+// PUZZLE DATA - Add your daily puzzles here
+// ============================================
+const PUZZLES = [
+	{
+		clues: [
+			{ hint: "A round fruit that keeps the doctor away", answer: "apple" },
+			{ hint: "A company founded by Steve Jobs", answer: "apple" },
+			{ hint: "The Big _____ (nickname for New York City)", answer: "apple" }
+		],
+		link: { hint: "What word connects all three clues?", answer: "apple" }
+	},
+	{
+		clues: [
+			{ hint: "Earth's natural satellite", answer: "moon" },
+			{ hint: "To show your backside in public", answer: "moon" },
+			{ hint: "_____ River (a famous song)", answer: "moon" }
+		],
+		link: { hint: "What word connects all three clues?", answer: "moon" }
+	},
+	{
+		clues: [
+			{ hint: "A playing card with a single pip", answer: "ace" },
+			{ hint: "A serve that can't be returned in tennis", answer: "ace" },
+			{ hint: "_____ Ventura (Jim Carrey movie)", answer: "ace" }
+		],
+		link: { hint: "What word connects all three clues?", answer: "ace" }
+	},
+	{
+		clues: [
+			{ hint: "The organ that pumps blood", answer: "heart" },
+			{ hint: "The center or core of something", answer: "heart" },
+			{ hint: "A suit in a deck of cards", answer: "heart" }
+		],
+		link: { hint: "What word connects all three clues?", answer: "heart" }
+	},
+	{
+		clues: [
+			{ hint: "A celestial body that shines at night", answer: "star" },
+			{ hint: "A famous celebrity", answer: "star" },
+			{ hint: "A shape with five points", answer: "star" }
+		],
+		link: { hint: "What word connects all three clues?", answer: "star" }
+	},
+	{
+		clues: [
+			{ hint: "The joint connecting the arm to the hand", answer: "wrist" },
+			{ hint: "Where you wear a watch", answer: "wrist" },
+			{ hint: "_____ band (a type of bracelet)", answer: "wrist" }
+		],
+		link: { hint: "What word connects all three clues?", answer: "wrist" }
+	},
+	{
+		clues: [
+			{ hint: "A type of tree that produces acorns", answer: "oak" },
+			{ hint: "A strong and durable wood for furniture", answer: "oak" },
+			{ hint: "_____ Island (NFL Raiders' former stadium)", answer: "oak" }
+		],
+		link: { hint: "What word connects all three clues?", answer: "oak" }
+	}
+];
+
+// ============================================
+// GAME STATE
+// ============================================
+let gameState = {
+	puzzle: null,
+	solved: [false, false, false, false], // clue1, clue2, clue3, link
+	attempts: [0, 0, 0, 0]
+};
+
+// ============================================
+// UTILITY FUNCTIONS
+// ============================================
+
+/**
+ * Gets the current date string in YYYY-MM-DD format
+ * @returns {string} Date string
+ */
+function getDateString() {
+	const today = new Date();
+	return today.toISOString().split('T')[0];
+}
+
+/**
+ * Gets a deterministic puzzle index based on the current date
+ * Uses a simple hash to rotate through puzzles daily
+ * @returns {number} Puzzle index
+ */
+function getDailyPuzzleIndex() {
+	const dateStr = getDateString();
+	let hash = 0;
+	for (let i = 0; i < dateStr.length; i++) {
+		const char = dateStr.charCodeAt(i);
+		hash = ((hash << 5) - hash) + char;
+		hash = hash & hash; // Convert to 32bit integer
+	}
+	return Math.abs(hash) % PUZZLES.length;
+}
+
+/**
+ * Normalizes an answer for comparison (lowercase, trim whitespace)
+ * @param {string} answer - The answer to normalize
+ * @returns {string} Normalized answer
+ */
+function normalizeAnswer(answer) {
+	if (typeof answer !== 'string') return '';
+	return answer.toLowerCase().trim();
+}
+
+/**
+ * Gets saved game state from localStorage
+ * @returns {object|null} Saved state or null
+ */
+function getSavedState() {
+	try {
+		const saved = localStorage.getItem('puzzleState');
+		if (!saved) return null;
+
+		const state = JSON.parse(saved);
+		// Check if it's from today
+		if (state.date !== getDateString()) {
+			localStorage.removeItem('puzzleState');
+			return null;
+		}
+		return state;
+	} catch (e) {
+		console.error('Error loading saved state:', e);
+		return null;
+	}
+}
+
+/**
+ * Saves current game state to localStorage
+ */
+function saveState() {
+	try {
+		const state = {
+			date: getDateString(),
+			solved: gameState.solved,
+			attempts: gameState.attempts
+		};
+		localStorage.setItem('puzzleState', JSON.stringify(state));
+	} catch (e) {
+		console.error('Error saving state:', e);
+	}
+}
+
+// ============================================
+// GAME LOGIC
+// ============================================
+
+/**
+ * Initializes the game with today's puzzle
+ */
+function initGame() {
+	// Get today's puzzle
+	const puzzleIndex = getDailyPuzzleIndex();
+	gameState.puzzle = PUZZLES[puzzleIndex];
+
+	// Try to restore saved state
+	const savedState = getSavedState();
+	if (savedState) {
+		gameState.solved = savedState.solved;
+		gameState.attempts = savedState.attempts;
+	}
+
+	// Display the date
+	const dateDisplay = document.getElementById('puzzle-date');
+	const today = new Date();
+	dateDisplay.textContent = today.toLocaleDateString('en-US', {
+		weekday: 'long',
+		year: 'numeric',
+		month: 'long',
+		day: 'numeric'
+	});
+
+	// Set up hints
+	for (let i = 0; i < 3; i++) {
+		document.getElementById(`hint-${i + 1}`).textContent = gameState.puzzle.clues[i].hint;
+	}
+	document.getElementById('hint-link').textContent = gameState.puzzle.link.hint;
+
+	// Restore solved states
+	for (let i = 0; i < 3; i++) {
+		if (gameState.solved[i]) {
+			markAsSolved(i + 1);
+		}
+	}
+	if (gameState.solved[3]) {
+		markAsSolved('link');
+	}
+
+	// Update stats
+	updateStats();
+
+	// Check if puzzle is complete
+	checkPuzzleComplete();
+
+	// Add enter key listeners
+	for (let i = 1; i <= 3; i++) {
+		document.getElementById(`input-${i}`).addEventListener('keypress', function(e) {
+			if (e.key === 'Enter') checkAnswer(i);
+		});
+	}
+	document.getElementById('input-link').addEventListener('keypress', function(e) {
+		if (e.key === 'Enter') checkAnswer('link');
+	});
+}
+
+/**
+ * Checks an answer for a specific clue or link
+ * @param {number|string} id - The clue number (1-3) or 'link'
+ */
+function checkAnswer(id) {
+	const isLink = id === 'link';
+	const index = isLink ? 3 : id - 1;
+
+	// Don't check if already solved
+	if (gameState.solved[index]) return;
+
+	const input = document.getElementById(`input-${id}`);
+	const resultDiv = document.getElementById(`result-${id}`);
+	const userAnswer = normalizeAnswer(input.value);
+
+	// Validate input
+	if (!userAnswer) {
+		resultDiv.textContent = 'Please enter an answer';
+		resultDiv.className = 'clue-result result-error';
+		return;
+	}
+
+	// Get correct answer
+	const correctAnswer = isLink
+		? normalizeAnswer(gameState.puzzle.link.answer)
+		: normalizeAnswer(gameState.puzzle.clues[index].answer);
+
+	// Increment attempts
+	gameState.attempts[index]++;
+
+	// Check answer
+	if (userAnswer === correctAnswer) {
+		gameState.solved[index] = true;
+		markAsSolved(id);
+		resultDiv.textContent = 'Correct!';
+		resultDiv.className = 'clue-result result-correct';
+	} else {
+		resultDiv.textContent = 'Try again!';
+		resultDiv.className = 'clue-result result-incorrect';
+		// Shake animation
+		input.classList.add('shake');
+		setTimeout(() => input.classList.remove('shake'), 500);
+	}
+
+	// Save state and update
+	saveState();
+	updateStats();
+	checkPuzzleComplete();
+}
+
+/**
+ * Marks a clue or link as solved (disables input, shows answer)
+ * @param {number|string} id - The clue number (1-3) or 'link'
+ */
+function markAsSolved(id) {
+	const isLink = id === 'link';
+	const index = isLink ? 3 : id - 1;
+
+	const input = document.getElementById(`input-${id}`);
+	const button = document.getElementById(`check-${id}`);
+	const row = document.getElementById(isLink ? 'link-row' : `clue-row-${id}`);
+
+	const correctAnswer = isLink
+		? gameState.puzzle.link.answer
+		: gameState.puzzle.clues[index].answer;
+
+	input.value = correctAnswer;
+	input.disabled = true;
+	button.disabled = true;
+	row.classList.add('solved');
+}
+
+/**
+ * Updates the stats display
+ */
+function updateStats() {
+	const statsDiv = document.getElementById('puzzle-stats');
+	const solvedCount = gameState.solved.filter(s => s).length;
+	const totalAttempts = gameState.attempts.reduce((a, b) => a + b, 0);
+
+	statsDiv.textContent = `Solved: ${solvedCount}/4 | Total Attempts: ${totalAttempts}`;
+}
+
+/**
+ * Checks if the puzzle is complete and shows congratulations
+ */
+function checkPuzzleComplete() {
+	const allSolved = gameState.solved.every(s => s);
+
+	if (allSolved) {
+		const completeDiv = document.getElementById('puzzle-complete');
+		const messageDiv = document.getElementById('complete-message');
+		const totalAttempts = gameState.attempts.reduce((a, b) => a + b, 0);
+
+		let message = '';
+		if (totalAttempts === 4) {
+			message = 'Perfect score! You got everything on the first try!';
+		} else if (totalAttempts <= 6) {
+			message = 'Excellent work! You solved today\'s puzzle with ease!';
+		} else if (totalAttempts <= 10) {
+			message = 'Good job! You completed today\'s puzzle!';
+		} else {
+			message = 'You did it! Persistence pays off!';
+		}
+
+		messageDiv.textContent = message;
+		completeDiv.style.display = 'block';
+	}
+}
+
+// Initialize game when page loads
+document.addEventListener('DOMContentLoaded', initGame);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js" integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN" crossorigin="anonymous"></script>
+</body>
+</html>

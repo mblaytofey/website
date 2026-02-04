@@ -292,3 +292,202 @@ form {
   	list-style-type: none !important;
   	justify-content: space-between !important;
 }*/
+
+/* ============================================
+   PUZZLE GAME STYLES
+   ============================================ */
+
+.puzzle-container {
+	max-width: 700px;
+	margin: 50px auto 100px auto;
+	padding: 20px;
+}
+
+.puzzle-subtitle {
+	color: #40514E;
+	font-size: 1.1rem;
+	margin-bottom: 10px;
+}
+
+.puzzle-date {
+	color: #11cdd4;
+	font-family: 'Merriweather', serif;
+	font-size: 1rem;
+	margin-bottom: 40px;
+}
+
+.puzzle-board {
+	background-color: rgba(0, 0, 0, 0.3);
+	border-radius: 12px;
+	padding: 30px;
+	margin-bottom: 30px;
+}
+
+.clue-row {
+	margin-bottom: 25px;
+	padding: 20px;
+	background-color: rgba(255, 255, 255, 0.05);
+	border-radius: 8px;
+	transition: all 0.3s ease;
+}
+
+.clue-row.solved {
+	background-color: rgba(17, 205, 212, 0.15);
+	border: 1px solid #11cdd4;
+}
+
+.clue-label {
+	font-family: 'Merriweather', serif;
+	font-weight: bold;
+	color: #11cdd4;
+	font-size: 1.2rem;
+	margin-bottom: 8px;
+}
+
+.link-label {
+	color: #30e3cb;
+	font-size: 1.4rem;
+}
+
+.link-row {
+	background-color: rgba(48, 227, 203, 0.1);
+	border: 1px dashed #30e3cb;
+}
+
+.clue-hint {
+	color: white;
+	font-size: 1rem;
+	margin-bottom: 15px;
+	font-style: italic;
+}
+
+.clue-input-group {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.clue-input {
+	flex: 1;
+	min-width: 200px;
+	padding: 12px 15px;
+	font-size: 1rem;
+	border: 2px solid #40514E;
+	border-radius: 8px;
+	background-color: #222831;
+	color: white;
+	font-family: 'Alegreya Sans', sans-serif;
+	transition: border-color 0.3s ease;
+}
+
+.clue-input:focus {
+	outline: none;
+	border-color: #11cdd4;
+}
+
+.clue-input:disabled {
+	background-color: rgba(17, 205, 212, 0.2);
+	border-color: #11cdd4;
+	color: #11cdd4;
+	font-weight: bold;
+}
+
+.check-btn {
+	padding: 12px 25px;
+	font-size: 1rem;
+}
+
+.check-btn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.clue-result {
+	margin-top: 10px;
+	font-size: 0.95rem;
+	font-weight: bold;
+	min-height: 24px;
+}
+
+.result-correct {
+	color: #30e3cb;
+}
+
+.result-incorrect {
+	color: #ff6b6b;
+}
+
+.result-error {
+	color: #ffd93d;
+}
+
+.puzzle-stats {
+	text-align: center;
+	color: #40514E;
+	font-size: 1rem;
+	margin-bottom: 20px;
+}
+
+.puzzle-complete {
+	background: linear-gradient(135deg, rgba(17, 205, 212, 0.2), rgba(48, 227, 203, 0.2));
+	border: 2px solid #30e3cb;
+	border-radius: 12px;
+	padding: 30px;
+	text-align: center;
+	animation: fadeIn 0.5s ease;
+}
+
+.complete-message {
+	color: white;
+	font-size: 1.1rem;
+	margin: 15px 0;
+}
+
+.share-text {
+	color: #40514E;
+	font-size: 0.95rem;
+}
+
+/* Shake animation for incorrect answers */
+@keyframes shake {
+	0%, 100% { transform: translateX(0); }
+	10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+	20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+	animation: shake 0.5s ease;
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; transform: translateY(-10px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/* Responsive adjustments for puzzle */
+@media (max-width: 600px) {
+	.puzzle-container {
+		margin: 30px 15px 60px 15px;
+		padding: 10px;
+	}
+
+	.puzzle-board {
+		padding: 15px;
+	}
+
+	.clue-row {
+		padding: 15px;
+	}
+
+	.clue-input-group {
+		flex-direction: column;
+	}
+
+	.clue-input {
+		min-width: 100%;
+	}
+
+	.check-btn {
+		width: 100%;
+	}
+}
