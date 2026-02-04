@@ -464,6 +464,38 @@ form {
 	to { opacity: 1; transform: translateY(0); }
 }
 
+/* Loading and error states */
+.puzzle-loading {
+	text-align: center;
+	padding: 60px 20px;
+	color: #11cdd4;
+	font-size: 1.1rem;
+}
+
+.puzzle-loading p {
+	animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.5; }
+}
+
+.puzzle-error {
+	background-color: rgba(255, 107, 107, 0.1);
+	border: 1px solid #ff6b6b;
+	border-radius: 8px;
+	padding: 15px;
+	margin-bottom: 20px;
+	text-align: center;
+}
+
+.puzzle-error p {
+	color: #ff6b6b;
+	margin: 0;
+	font-size: 0.95rem;
+}
+
 /* Responsive adjustments for puzzle */
 @media (max-width: 600px) {
 	.puzzle-container {

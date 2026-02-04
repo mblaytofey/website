@@ -4,10 +4,10 @@
  */
 
 // ============================================
-// MOCK FUNCTIONS (copied from puzzle.html for testing)
+// MOCK FUNCTIONS (copied from puzzle-db.js for testing)
 // ============================================
 
-const PUZZLES = [
+const FALLBACK_PUZZLES = [
 	{
 		clues: [
 			{ hint: "A round fruit that keeps the doctor away", answer: "apple" },
@@ -30,19 +30,31 @@ function getDateString(date = new Date()) {
 	return date.toISOString().split('T')[0];
 }
 
-function getDailyPuzzleIndex(dateStr) {
+function getFallbackPuzzleIndex(dateStr) {
 	let hash = 0;
 	for (let i = 0; i < dateStr.length; i++) {
 		const char = dateStr.charCodeAt(i);
 		hash = ((hash << 5) - hash) + char;
 		hash = hash & hash;
 	}
-	return Math.abs(hash) % PUZZLES.length;
+	return Math.abs(hash) % FALLBACK_PUZZLES.length;
 }
 
 function normalizeAnswer(answer) {
 	if (typeof answer !== 'string') return '';
 	return answer.toLowerCase().trim();
+}
+
+function transformDBPuzzle(row) {
+	return {
+		date: row.puzzle_date,
+		clues: [
+			{ hint: row.clue1_hint, answer: row.clue1_answer },
+			{ hint: row.clue2_hint, answer: row.clue2_answer },
+			{ hint: row.clue3_hint, answer: row.clue3_answer }
+		],
+		link: { hint: row.link_hint, answer: row.link_answer }
+	};
 }
 
 // ============================================
@@ -76,6 +88,14 @@ function assertTrue(condition, message = '') {
 	}
 }
 
+function assertDeepEqual(actual, expected, message = '') {
+	const actualStr = JSON.stringify(actual);
+	const expectedStr = JSON.stringify(expected);
+	if (actualStr !== expectedStr) {
+		throw new Error(`${message} Expected ${expectedStr}, got ${actualStr}`);
+	}
+}
+
 // ============================================
 // TESTS
 // ============================================
@@ -96,23 +116,22 @@ test('getDateString returns consistent format', () => {
 
 console.log('\n🎯 Puzzle Index Functions:');
 
-test('getDailyPuzzleIndex returns valid index', () => {
-	const index = getDailyPuzzleIndex('2024-01-15');
-	assertTrue(index >= 0 && index < PUZZLES.length, 'Index should be within bounds');
+test('getFallbackPuzzleIndex returns valid index', () => {
+	const index = getFallbackPuzzleIndex('2024-01-15');
+	assertTrue(index >= 0 && index < FALLBACK_PUZZLES.length, 'Index should be within bounds');
 });
 
-test('getDailyPuzzleIndex is deterministic', () => {
-	const index1 = getDailyPuzzleIndex('2024-01-15');
-	const index2 = getDailyPuzzleIndex('2024-01-15');
+test('getFallbackPuzzleIndex is deterministic', () => {
+	const index1 = getFallbackPuzzleIndex('2024-01-15');
+	const index2 = getFallbackPuzzleIndex('2024-01-15');
 	assertEqual(index1, index2, 'Same date should return same index');
 });
 
-test('getDailyPuzzleIndex varies by date', () => {
-	// Test multiple dates to ensure variation
+test('getFallbackPuzzleIndex varies by date', () => {
 	const indices = new Set();
 	for (let i = 1; i <= 30; i++) {
 		const dateStr = `2024-01-${i.toString().padStart(2, '0')}`;
-		indices.add(getDailyPuzzleIndex(dateStr));
+		indices.add(getFallbackPuzzleIndex(dateStr));
 	}
 	assertTrue(indices.size > 1, 'Different dates should produce different indices');
 });
@@ -147,8 +166,8 @@ test('normalizeAnswer handles non-string input', () => {
 
 console.log('\n🔍 Puzzle Data Validation:');
 
-test('All puzzles have correct structure', () => {
-	PUZZLES.forEach((puzzle, i) => {
+test('All fallback puzzles have correct structure', () => {
+	FALLBACK_PUZZLES.forEach((puzzle, i) => {
 		assertTrue(Array.isArray(puzzle.clues), `Puzzle ${i}: clues should be an array`);
 		assertEqual(puzzle.clues.length, 3, `Puzzle ${i}: should have 3 clues`);
 		assertTrue(puzzle.link !== undefined, `Puzzle ${i}: should have a link`);
@@ -158,7 +177,7 @@ test('All puzzles have correct structure', () => {
 });
 
 test('All clues have hint and answer', () => {
-	PUZZLES.forEach((puzzle, pIdx) => {
+	FALLBACK_PUZZLES.forEach((puzzle, pIdx) => {
 		puzzle.clues.forEach((clue, cIdx) => {
 			assertTrue(typeof clue.hint === 'string' && clue.hint.length > 0,
 				`Puzzle ${pIdx}, Clue ${cIdx}: should have non-empty hint`);
@@ -171,31 +190,104 @@ test('All clues have hint and answer', () => {
 console.log('\n🎮 Answer Matching:');
 
 test('Correct answer matches (exact)', () => {
-	const puzzle = PUZZLES[0];
+	const puzzle = FALLBACK_PUZZLES[0];
 	const userAnswer = normalizeAnswer('apple');
 	const correctAnswer = normalizeAnswer(puzzle.clues[0].answer);
 	assertEqual(userAnswer, correctAnswer);
 });
 
 test('Correct answer matches (case insensitive)', () => {
-	const puzzle = PUZZLES[0];
+	const puzzle = FALLBACK_PUZZLES[0];
 	const userAnswer = normalizeAnswer('APPLE');
 	const correctAnswer = normalizeAnswer(puzzle.clues[0].answer);
 	assertEqual(userAnswer, correctAnswer);
 });
 
 test('Incorrect answer does not match', () => {
-	const puzzle = PUZZLES[0];
+	const puzzle = FALLBACK_PUZZLES[0];
 	const userAnswer = normalizeAnswer('banana');
 	const correctAnswer = normalizeAnswer(puzzle.clues[0].answer);
 	assertTrue(userAnswer !== correctAnswer, 'Wrong answer should not match');
 });
 
 test('Answer with extra spaces matches', () => {
-	const puzzle = PUZZLES[0];
+	const puzzle = FALLBACK_PUZZLES[0];
 	const userAnswer = normalizeAnswer('  apple  ');
 	const correctAnswer = normalizeAnswer(puzzle.clues[0].answer);
 	assertEqual(userAnswer, correctAnswer);
+});
+
+console.log('\n🗄️ Database Transform:');
+
+test('transformDBPuzzle converts database row correctly', () => {
+	const dbRow = {
+		puzzle_date: '2024-01-15',
+		clue1_hint: 'Hint 1',
+		clue1_answer: 'answer1',
+		clue2_hint: 'Hint 2',
+		clue2_answer: 'answer2',
+		clue3_hint: 'Hint 3',
+		clue3_answer: 'answer3',
+		link_hint: 'Link hint',
+		link_answer: 'link'
+	};
+
+	const result = transformDBPuzzle(dbRow);
+
+	assertEqual(result.date, '2024-01-15');
+	assertEqual(result.clues.length, 3);
+	assertEqual(result.clues[0].hint, 'Hint 1');
+	assertEqual(result.clues[0].answer, 'answer1');
+	assertEqual(result.clues[1].hint, 'Hint 2');
+	assertEqual(result.clues[1].answer, 'answer2');
+	assertEqual(result.clues[2].hint, 'Hint 3');
+	assertEqual(result.clues[2].answer, 'answer3');
+	assertEqual(result.link.hint, 'Link hint');
+	assertEqual(result.link.answer, 'link');
+});
+
+test('transformDBPuzzle preserves all data', () => {
+	const dbRow = {
+		puzzle_date: '2024-12-25',
+		clue1_hint: 'A festive tree',
+		clue1_answer: 'christmas',
+		clue2_hint: 'December 25th holiday',
+		clue2_answer: 'christmas',
+		clue3_hint: '_____ Carol (Dickens story)',
+		clue3_answer: 'christmas',
+		link_hint: 'What holiday connects them?',
+		link_answer: 'christmas'
+	};
+
+	const result = transformDBPuzzle(dbRow);
+
+	assertTrue(result.clues.every(c => c.answer === 'christmas'), 'All answers should be christmas');
+	assertEqual(result.link.answer, 'christmas');
+});
+
+console.log('\n🔄 Fallback Mechanism:');
+
+test('Fallback puzzles cover multiple dates', () => {
+	const puzzlesByIndex = {};
+	for (let month = 1; month <= 12; month++) {
+		for (let day = 1; day <= 28; day++) {
+			const dateStr = `2024-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+			const index = getFallbackPuzzleIndex(dateStr);
+			puzzlesByIndex[index] = (puzzlesByIndex[index] || 0) + 1;
+		}
+	}
+	// All puzzle indices should be used
+	const usedIndices = Object.keys(puzzlesByIndex).length;
+	assertTrue(usedIndices === FALLBACK_PUZZLES.length, `All ${FALLBACK_PUZZLES.length} fallback puzzles should be used`);
+});
+
+test('Same date always returns same fallback puzzle', () => {
+	const date = '2024-06-15';
+	const index1 = getFallbackPuzzleIndex(date);
+	const index2 = getFallbackPuzzleIndex(date);
+	const index3 = getFallbackPuzzleIndex(date);
+	assertEqual(index1, index2);
+	assertEqual(index2, index3);
 });
 
 // ============================================

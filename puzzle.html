@@ -46,7 +46,17 @@
 
 	<div class="puzzle-date" id="puzzle-date"></div>
 
-	<div class="puzzle-board">
+	<!-- Loading State -->
+	<div class="puzzle-loading" id="puzzle-loading">
+		<p>Loading today's puzzle...</p>
+	</div>
+
+	<!-- Error State -->
+	<div class="puzzle-error" id="puzzle-error" style="display: none;">
+		<p>Could not load puzzle. Using offline mode.</p>
+	</div>
+
+	<div class="puzzle-board" id="puzzle-board" style="display: none;">
 		<!-- Clue 1 -->
 		<div class="clue-row" id="clue-row-1">
 			<div class="clue-label">Clue 1</div>
@@ -114,69 +124,10 @@
 	<p class="copyright">&copy; 2023 Morkeh Blay-Tofey.</p>
 </div>
 
-<script>
-// ============================================
-// PUZZLE DATA - Add your daily puzzles here
-// ============================================
-const PUZZLES = [
-	{
-		clues: [
-			{ hint: "A round fruit that keeps the doctor away", answer: "apple" },
-			{ hint: "A company founded by Steve Jobs", answer: "apple" },
-			{ hint: "The Big _____ (nickname for New York City)", answer: "apple" }
-		],
-		link: { hint: "What word connects all three clues?", answer: "apple" }
-	},
-	{
-		clues: [
-			{ hint: "Earth's natural satellite", answer: "moon" },
-			{ hint: "To show your backside in public", answer: "moon" },
-			{ hint: "_____ River (a famous song)", answer: "moon" }
-		],
-		link: { hint: "What word connects all three clues?", answer: "moon" }
-	},
-	{
-		clues: [
-			{ hint: "A playing card with a single pip", answer: "ace" },
-			{ hint: "A serve that can't be returned in tennis", answer: "ace" },
-			{ hint: "_____ Ventura (Jim Carrey movie)", answer: "ace" }
-		],
-		link: { hint: "What word connects all three clues?", answer: "ace" }
-	},
-	{
-		clues: [
-			{ hint: "The organ that pumps blood", answer: "heart" },
-			{ hint: "The center or core of something", answer: "heart" },
-			{ hint: "A suit in a deck of cards", answer: "heart" }
-		],
-		link: { hint: "What word connects all three clues?", answer: "heart" }
-	},
-	{
-		clues: [
-			{ hint: "A celestial body that shines at night", answer: "star" },
-			{ hint: "A famous celebrity", answer: "star" },
-			{ hint: "A shape with five points", answer: "star" }
-		],
-		link: { hint: "What word connects all three clues?", answer: "star" }
-	},
-	{
-		clues: [
-			{ hint: "The joint connecting the arm to the hand", answer: "wrist" },
-			{ hint: "Where you wear a watch", answer: "wrist" },
-			{ hint: "_____ band (a type of bracelet)", answer: "wrist" }
-		],
-		link: { hint: "What word connects all three clues?", answer: "wrist" }
-	},
-	{
-		clues: [
-			{ hint: "A type of tree that produces acorns", answer: "oak" },
-			{ hint: "A strong and durable wood for furniture", answer: "oak" },
-			{ hint: "_____ Island (NFL Raiders' former stadium)", answer: "oak" }
-		],
-		link: { hint: "What word connects all three clues?", answer: "oak" }
-	}
-];
+<!-- Database Module -->
+<script src="js/puzzle-db.js"></script>
 
+<script>
 // ============================================
 // GAME STATE
 // ============================================
@@ -197,22 +148,6 @@ let gameState = {
 function getDateString() {
 	const today = new Date();
 	return today.toISOString().split('T')[0];
-}
-
-/**
- * Gets a deterministic puzzle index based on the current date
- * Uses a simple hash to rotate through puzzles daily
- * @returns {number} Puzzle index
- */
-function getDailyPuzzleIndex() {
-	const dateStr = getDateString();
-	let hash = 0;
-	for (let i = 0; i < dateStr.length; i++) {
-		const char = dateStr.charCodeAt(i);
-		hash = ((hash << 5) - hash) + char;
-		hash = hash & hash; // Convert to 32bit integer
-	}
-	return Math.abs(hash) % PUZZLES.length;
 }
 
 /**
@@ -264,23 +199,44 @@ function saveState() {
 }
 
 // ============================================
+// UI HELPERS
+// ============================================
+
+/**
+ * Shows the loading state
+ */
+function showLoading() {
+	document.getElementById('puzzle-loading').style.display = 'block';
+	document.getElementById('puzzle-board').style.display = 'none';
+	document.getElementById('puzzle-error').style.display = 'none';
+}
+
+/**
+ * Shows the puzzle board
+ */
+function showPuzzle() {
+	document.getElementById('puzzle-loading').style.display = 'none';
+	document.getElementById('puzzle-board').style.display = 'block';
+	document.getElementById('puzzle-error').style.display = 'none';
+}
+
+/**
+ * Shows error message (but still loads fallback)
+ */
+function showError() {
+	document.getElementById('puzzle-loading').style.display = 'none';
+	document.getElementById('puzzle-error').style.display = 'block';
+}
+
+// ============================================
 // GAME LOGIC
 // ============================================
 
 /**
  * Initializes the game with today's puzzle
  */
-function initGame() {
-	// Get today's puzzle
-	const puzzleIndex = getDailyPuzzleIndex();
-	gameState.puzzle = PUZZLES[puzzleIndex];
-
-	// Try to restore saved state
-	const savedState = getSavedState();
-	if (savedState) {
-		gameState.solved = savedState.solved;
-		gameState.attempts = savedState.attempts;
-	}
+async function initGame() {
+	showLoading();
 
 	// Display the date
 	const dateDisplay = document.getElementById('puzzle-date');
@@ -292,37 +248,62 @@ function initGame() {
 		day: 'numeric'
 	});
 
-	// Set up hints
-	for (let i = 0; i < 3; i++) {
-		document.getElementById(`hint-${i + 1}`).textContent = gameState.puzzle.clues[i].hint;
-	}
-	document.getElementById('hint-link').textContent = gameState.puzzle.link.hint;
+	try {
+		// Fetch today's puzzle from database
+		const puzzle = await PuzzleDB.getTodaysPuzzle();
+		gameState.puzzle = puzzle;
 
-	// Restore solved states
-	for (let i = 0; i < 3; i++) {
-		if (gameState.solved[i]) {
-			markAsSolved(i + 1);
+		// Show warning if using fallback
+		if (puzzle.isFallback) {
+			showError();
 		}
-	}
-	if (gameState.solved[3]) {
-		markAsSolved('link');
-	}
 
-	// Update stats
-	updateStats();
+		// Try to restore saved state
+		const savedState = getSavedState();
+		if (savedState) {
+			gameState.solved = savedState.solved;
+			gameState.attempts = savedState.attempts;
+		}
 
-	// Check if puzzle is complete
-	checkPuzzleComplete();
+		// Set up hints
+		for (let i = 0; i < 3; i++) {
+			document.getElementById(`hint-${i + 1}`).textContent = gameState.puzzle.clues[i].hint;
+		}
+		document.getElementById('hint-link').textContent = gameState.puzzle.link.hint;
 
-	// Add enter key listeners
-	for (let i = 1; i <= 3; i++) {
-		document.getElementById(`input-${i}`).addEventListener('keypress', function(e) {
-			if (e.key === 'Enter') checkAnswer(i);
+		// Show the puzzle board
+		showPuzzle();
+
+		// Restore solved states
+		for (let i = 0; i < 3; i++) {
+			if (gameState.solved[i]) {
+				markAsSolved(i + 1);
+			}
+		}
+		if (gameState.solved[3]) {
+			markAsSolved('link');
+		}
+
+		// Update stats
+		updateStats();
+
+		// Check if puzzle is complete
+		checkPuzzleComplete();
+
+		// Add enter key listeners
+		for (let i = 1; i <= 3; i++) {
+			document.getElementById(`input-${i}`).addEventListener('keypress', function(e) {
+				if (e.key === 'Enter') checkAnswer(i);
+			});
+		}
+		document.getElementById('input-link').addEventListener('keypress', function(e) {
+			if (e.key === 'Enter') checkAnswer('link');
 		});
+
+	} catch (error) {
+		console.error('Error initializing game:', error);
+		showError();
 	}
-	document.getElementById('input-link').addEventListener('keypress', function(e) {
-		if (e.key === 'Enter') checkAnswer('link');
-	});
 }
 
 /**
